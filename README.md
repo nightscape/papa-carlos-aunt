@@ -11,4 +11,4 @@ sbt
 antlr4:antlr4Generate
 eclipse with-source=true
 ```
-After that you need to fix an error in the generated ```scalaLexer.java``` then you're good to go!
+After that you need to fix an error in the generated ```scalaLexer.java``` by removing the content of the ```MultiLineChars_action``` method, then you're good to go!
