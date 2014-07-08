@@ -1,1 +1,7 @@
 target/
+/bin/
+.cache
+.classpath
+.settings
+.worksheet
+.project
