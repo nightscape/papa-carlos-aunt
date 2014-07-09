@@ -8,6 +8,15 @@ scalaVersion := "2.11.1"
 
 antlr4Settings
 
+antlr4GenVisitor in Antlr4 := true
+
+antlr4PackageName in Antlr4 := Some("io.github.papacarlo")
+
+lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
+
+TwirlKeys.templateImports ++= Seq("scala.collection.JavaConversions._",
+	"io.github.papacarlo._")
+
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource +  EclipseCreateSrc.Managed
 
 libraryDependencies ++= Seq(

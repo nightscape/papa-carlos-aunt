@@ -6,6 +6,9 @@ import java.io.FileInputStream
 import java.io.File
 import scala.util.Properties
 import org.antlr.v4.runtime.tree.ParseTreeWalker
+import org.antlr.v4.runtime.tree.pattern.ParseTreePatternMatcher
+import io.github.papacarlo._
+import scala.collection.JavaConversions._
 
 object Antlr {
   println("Welcome to the Scala worksheet")
@@ -19,23 +22,15 @@ object Antlr {
 
   val scalaGrammarFile = new File(projectDir, "src/main/antlr4/scala.g4")
   val input = new FileInputStream(scalaGrammarFile)
-  val lexer = new ANTLRv4Lexer(new ANTLRInputStream(new BufferedInputStream(input)));
-  val parser = new ANTLRv4Parser(new CommonTokenStream(lexer));
-
-  val tree = parser.grammarSpec();
-  class ScalaListener extends ANTLRv4ParserBaseListener {
-    override def enterParserRuleSpec(ctx: ANTLRv4Parser.ParserRuleSpecContext) {
-      println(s"Entering parser rule $ctx: ${ctx.getText()}")
-      
-    }
-  }
-  val listener = new ScalaListener
-  val walker = new ParseTreeWalker()
+  val lexer = new ANTLRv4Lexer(new ANTLRInputStream(new BufferedInputStream(input)))
+  val parser = new ANTLRv4Parser(new CommonTokenStream(lexer))
   lexer.reset()
   parser.reset()
-  walker.walk(listener, parser.grammarSpec())
-  //val visitor = new RuleVisitor();
-  //visitor.visit(tree);
+  val content = txt.papa_carlo.apply(parser.grammarSpec())
+  parser.reset()
 
-  //println(visitor.getRules())
+  val r = parser.grammarSpec().rules()
+  val lex = r.ruleSpec().map(_.lexerRule()).filterNot(_ == null)
+
+  lex.flatMap(_.lexerRuleBlock().lexerAltList().lexerAlt()).map(_.getText())
 }
