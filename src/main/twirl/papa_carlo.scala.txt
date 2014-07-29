@@ -1,8 +1,17 @@
-@(tree: ANTLRv4Parser.GrammarSpecContext)
+@(tree: Seq[SLexerRule])
 
-/*
-<h1>Welcome @tree!</h1>
-*/
+@lexerToken(lexerAltList: LexerAltListContext) = @{
+  val alternatives = lexerAltList.lexerAlt
+  val content = ""//alternatives.getText
+  val correctlyQuoted = content.replaceAll("'", "\"")
+  s"chunk($correctlyQuoted)"
+}
+
+@single2DoubleQuotes(s: String) = @{
+  s.replaceAll("'", "\"")
+}
+
+
 
 import name.lakhin.eliah.projects.papacarlo.{Syntax, Lexer}
 import name.lakhin.eliah.projects.papacarlo.lexis.{Contextualizer, Matcher,  Tokenizer}
@@ -14,10 +23,16 @@ object Calculator {
 
     import tokenizer._
     import Matcher._
-	@for(lexerRule <- tree.rules().ruleSpec().map(_.lexerRule()).filterNot(_ == null)) {
+
+
+	@for(lexerRule <- tree) {
     tokenCategory(
-      "@lexerRule.TOKEN_REF()",
-      oneOrMore(anyOf(" \t\f\n"))
+      "@lexerRule.name",
+      choice(
+      @for(alt <- lexerRule.alternatives) {
+        
+      	sequence(@alt.mkString(",")"))
+      }
     ).skip
 	}
 
@@ -25,9 +40,11 @@ object Calculator {
       "number",
       choice(
         chunk("0"),
-        sequence(rangeOf('1', '9'), zeroOrMore(rangeOf('0', '9')))
+        sequence("\\", "u", optional("u"),"HexDigit", "HexDigit", "HexDigit", "HexDigit"))
+        //sequence(rangeOf('1', '9'), zeroOrMore(rangeOf('0', '9')))
       )
     )
+    
 
     terminals("(", ")", "%", "+", "-", "*", "/")
 

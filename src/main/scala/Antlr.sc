@@ -1,3 +1,5 @@
+package papa_carlos_aunt
+
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTree
@@ -9,6 +11,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.tree.pattern.ParseTreePatternMatcher
 import io.github.papacarlo._
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import io.github.papacarlo.ANTLRv4Parser._
+import papa_carlos_aunt.AntlrGrammar._
+import io.github.papacarlo.ANTLRv4Parser.LexerRuleContext
 
 object Antlr {
   println("Welcome to the Scala worksheet")
@@ -26,11 +32,31 @@ object Antlr {
   val parser = new ANTLRv4Parser(new CommonTokenStream(lexer))
   lexer.reset()
   parser.reset()
-  val content = txt.papa_carlo.apply(parser.grammarSpec())
+
   parser.reset()
 
   val r = parser.grammarSpec().rules()
   val lex = r.ruleSpec().map(_.lexerRule()).filterNot(_ == null)
+  val allLex = lex.map(_.lexerRuleBlock().lexerAltList())
+  val l = allLex(9)
+	def lexerRule(r: LexerRuleContext) = {
+		val alts = lexerToken(r.lexerRuleBlock().lexerAltList())
+		val name = r.TOKEN_REF.getText()
+		SLexerRule(name, alts)
+	}
+  def lexerToken(lexerAltList: LexerAltListContext) = {
+    val alternatives = lexerAltList.lexerAlt.asScala
+    val res = alternatives.map(_.lexerElements().lexerElement().map(lexerElement2Pc).flatten.toList)
+    res.toList
+  }
+  def lexerElement2Pc(el: LexerElementContext): Option[SLexerElement] = {
+    val repetition = Option(el.ebnfSuffix()).map(_.getText())
+    Option(el.lexerAtom()).map(a => SLexerElement(a.getText(), repetition))
+  }
 
-  lex.flatMap(_.lexerRuleBlock().lexerAltList().lexerAlt()).map(_.getText())
+  lexerToken(l)
+  val content = txt.papa_carlo.apply(lex.map(lexerRule))
+
+  allLex.map(lexerToken)
+  ANTLRv4Parser.tokenNames.indexWhere(_ == "'*'")
 }
